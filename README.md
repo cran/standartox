@@ -19,15 +19,15 @@ environmental toxicity of chemicals.
 
 The project lives in two repositories:
 
-  - [standartox-build](https://github.com/andschar/standartox-build) -
+-   [standartox-build](https://github.com/andschar/standartox-build) -
     Compiles and serves database
-  - [standartox](https://github.com/andschar/standartox) - R-package
+-   [standartox](https://github.com/andschar/standartox) - R-package
 
 ## Installation
 
 ``` r
-# install.packages('remotes')
-remotes::install_github('andschar/standartox') # package not yet on CRAN
+install.packages('standartox')
+# remotes::install_github('andschar/standartox') # development version
 ```
 
 ## Functions
@@ -52,42 +52,40 @@ names(catal)
     ##  [4] "concentration_type" "chemical_role"      "chemical_class"    
     ##  [7] "taxa"               "trophic_lvl"        "habitat"           
     ## [10] "region"             "ecotox_grp"         "duration"          
-    ## [13] "effect"             "endpoint"           "exposure"          
-    ## [16] "vers"
+    ## [13] "effect"             "endpoint"           "exposure"
 
 ``` r
 catal$endpoint # access the parameter endpoint
 ```
 
-| variable |      n | n\_total | perc |
-| :------- | -----: | -------: | ---: |
-| NOEX     | 237616 |   609435 |   39 |
-| LOEX     | 192718 |   609435 |   32 |
-| XX50     | 179101 |   609435 |   30 |
+| variable |      n | n_total | perc |
+|:---------|-------:|--------:|-----:|
+| NOEX     | 237616 |  609435 |   39 |
+| LOEX     | 192718 |  609435 |   32 |
+| XX50     | 179101 |  609435 |   30 |
 
 ### `stx_query()`
 
 The function allows you to retrieve filtered and aggregated toxicity
 data according to the parameters below.
 
-| parameter           | example                                     |
-| :------------------ | :------------------------------------------ |
-| casnr               | 50000, 94520, 94531                         |
-| cname               | 2718, 4, 3                                  |
-| concentration\_unit | ug/l, mg/kg, ppb                            |
-| concentration\_type | active ingredient, formulation, total       |
-| chemical\_role      | pesticide, herbicide, drug                  |
-| chemical\_class     | amide, aromatic, organochlorine             |
-| taxa                | species, Fusarium oxysporum, Apis mellifera |
-| trophic\_lvl        | heterotroph, autotroph                      |
-| habitat             | freshwater, terrestrial, marine             |
-| region              | europe, america\_north, america\_south      |
-| ecotox\_grp         | invertebrate, plant, fish                   |
-| duration            | 24, 96                                      |
-| effect              | mortality, population, biochemistry         |
-| endpoint            | NOEX, LOEX, XX50                            |
-| exposure            | aquatic, environmental, diet                |
-| vers                | 20191212                                    |
+| parameter          | example                                     |
+|:-------------------|:--------------------------------------------|
+| casnr              | 50000, 94520, 94531                         |
+| cname              | 2718, 4, 3                                  |
+| concentration_unit | ug/l, mg/kg, ppb                            |
+| concentration_type | active ingredient, formulation, total       |
+| chemical_role      | pesticide, herbicide, drug                  |
+| chemical_class     | amide, aromatic, organochlorine             |
+| taxa               | species, Fusarium oxysporum, Apis mellifera |
+| trophic_lvl        | heterotroph, autotroph                      |
+| habitat            | freshwater, terrestrial, marine             |
+| region             | europe, america_north, america_south        |
+| ecotox_grp         | invertebrate, plant, fish                   |
+| duration           | 24, 96                                      |
+| effect             | mortality, population, biochemistry         |
+| endpoint           | NOEX, LOEX, XX50                            |
+| exposure           | aquatic, environmental, diet                |
 
 You can type in parameters manually or subset the object returned by
 `stx_catalog()`:
@@ -115,59 +113,59 @@ l = stx_query(cas = cas,
 
 #### Important parameter settings
 
-  - **CAS** (`cas =`) Can be input in the form of 7758-98-7 or 7758987
-  - **Endpoints** (`endpoint =`) Only one endpoint per query is allowed:
-      - `NOEX` summarises [No observed effect
+-   **CAS** (`cas =`) Can be input in the form of 7758-98-7 or 7758987
+-   **Endpoints** (`endpoint =`) Only one endpoint per query is allowed:
+    -   `NOEX` summarises [No observed effect
         concentration/level](https://en.wikipedia.org/wiki/No-observed-adverse-effect_level)
         (i.e. NOEC, NOEL, NOAEL, etc.)
-      - `LOEX` summarises Lowest observed effects concentration
+    -   `LOEX` summarises Lowest observed effects concentration
         (i.e. LOEC, LOEL, etc.)
-      - `XX50` summarises [Half maximal effective
+    -   `XX50` summarises [Half maximal effective
         concentration](https://en.wikipedia.org/wiki/EC50) (i.e. EC50,
         LC50, LD50, etc.)
-  - If you leave a parameter empty Standartox will not filter for it
+-   If you leave a parameter empty Standartox will not filter for it
 
 ## Query result
 
 Standartox returns a list object with five entries.
 
-  - `l$filtred` and `l$filtered_all` contain the filtered Standartox
+-   `l$filtred` and `l$filtered_all` contain the filtered Standartox
     data set (the former only is a shorter and more concise version of
     the latter):
 
-| cas       | cname          | concentration | concentration\_unit | effect    | endpoint |
-| :-------- | :------------- | ------------: | :------------------ | :-------- | :------- |
-| 7758-98-7 | cupric sulfate |        1100.0 | ug/l                | mortality | XX50     |
-| 7758-98-7 | cupric sulfate |          18.9 | ug/l                | mortality | XX50     |
-| 7758-98-7 | cupric sulfate |          46.4 | ug/l                | mortality | XX50     |
+| cas       | cname          | concentration | concentration_unit | effect    | endpoint |
+|:----------|:---------------|--------------:|:-------------------|:----------|:---------|
+| 7758-98-7 | cupric sulfate |        1100.0 | ug/l               | mortality | XX50     |
+| 7758-98-7 | cupric sulfate |          18.9 | ug/l               | mortality | XX50     |
+| 7758-98-7 | cupric sulfate |          46.4 | ug/l               | mortality | XX50     |
 
-  - `l$aggregated` contains the several aggregates of the Standartox
+-   `l$aggregated` contains the several aggregates of the Standartox
     data:
-    
-      - `cname`, `cas` - chemical identifiers
-      - `min` - Minimum
-      - `tax_min` - Most sensitive taxon
-      - **`gmn`** - **Geometric mean**
-      - `amn` - Arithmetic mean
-      - `sd` - Standard Deviation of the arithmetic mean
-      - `max` - Maximum
-      - `tax_max` - Most insensitive taxon
-      - `n` - Number of distinct taxa used for the aggregation
-      - `tax_all` - Concatenated string of all taxa used for the
+
+    -   `cname`, `cas` - chemical identifiers
+    -   `min` - Minimum
+    -   `tax_min` - Most sensitive taxon
+    -   **`gmn`** - **Geometric mean**
+    -   `amn` - Arithmetic mean
+    -   `sd` - Standard Deviation of the arithmetic mean
+    -   `max` - Maximum
+    -   `tax_max` - Most insensitive taxon
+    -   `n` - Number of distinct taxa used for the aggregation
+    -   `tax_all` - Concatenated string of all taxa used for the
         aggregation
 
-| cname          | cas         |          min | tax\_min             |          gmn |         max |
-| :------------- | :---------- | -----------: | :------------------- | -----------: | ----------: |
+| cname          | cas         |          min | tax_min              |          gmn |         max |
+|:---------------|:------------|-------------:|:---------------------|-------------:|------------:|
 | cupric sulfate | 7758-98-7   | 6.813740e+01 | Oncorhynchus clarkii | 1.330055e+02 |    263.6153 |
 | imidacloprid   | 138261-41-3 | 2.291000e+05 | Oncorhynchus mykiss  | 2.291000e+05 | 229100.0000 |
 | permethrin     | 52645-53-1  | 1.896481e+00 | Oncorhynchus gilae   | 4.505877e+00 |     17.0000 |
 
-  - `l$meta` contains meta information on the request:
+-   `l$meta` contains meta information on the request:
 
-| variable            | value               |
-| :------------------ | :------------------ |
-| accessed            | 2021-05-04 11:26:44 |
-| standartox\_version | 20210315            |
+| variable           | value               |
+|:-------------------|:--------------------|
+| accessed           | 2022-08-06 20:59:07 |
+| standartox_version | 20210315            |
 
 ## Example: *Oncorhynchus*
 
@@ -255,7 +253,7 @@ The article on Standartox is published
 
 ### Contributors
 
-  - [Andreas Scharmüller](https://andschar.github.io)
+-   [Andreas Scharmüller](https://andschar.github.io)
 
 ### Want to contribute?
 
@@ -264,8 +262,8 @@ here](https://github.com/andschar/standartox/blob/master/CONTRIBUTING.md).
 
 ### Meta
 
-  - Please report any [issues, bugs or feature
+-   Please report any [issues, bugs or feature
     requests](https://github.com/andschar/standartox/issues)
-  - License: MIT
-  - Get citation information for the standartox package in R doing
+-   License: MIT
+-   Get citation information for the standartox package in R doing
     `citation(package = 'standartox')`

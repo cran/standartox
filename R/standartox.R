@@ -19,11 +19,16 @@ stx_catalog = function(vers = NULL) {
   # POST
   message('Retrieving Standartox catalog..')
   res = try(httr::POST(
-    url = file.path(domain(), 'catalog'),
+    url = file.path(stx_domain(), 'catalog'),
     body = body,
     encode = 'json',
   ), silent = TRUE)
-  stx_availability(res)
+  if (inherits(res, 'try-error') ||
+      ! httr::status_code(res) %in% c(200, 400)) {
+    stx_availability(res)
+    
+    return(NULL)
+  }
   cont = httr::content(res, type = 'text', encoding = 'UTF-8')
   
   jsonlite::fromJSON(cont)
@@ -88,8 +93,8 @@ stx_query = function(cas = NULL,
                      ...) {
   # to avoid NOTE in R CMD check --as-cran
   casnr = outlier = concentration = cname = NULL
-  # debuging
-  # browser() # debuging
+  # DEBUG
+  # browser()
   # cas = '1071-83-6'; concentration_unit = NULL; concentration_type = NULL; duration = NULL; endpoint = 'XX50'; effect = NULL; exposure = NULL; chemical_role = NULL; chemical_class = NULL; taxa = NULL; ecotox_grp = NULL; trophic_lvl = NULL; habitat = NULL; region = NULL; vers = NULL
   # checks
   endpoint = match.arg(endpoint)
@@ -112,11 +117,16 @@ stx_query = function(cas = NULL,
   # POST
   stx_message(body)
   res = try(httr::POST(
-    file.path(domain(), 'filter'),
+    file.path(stx_domain(), 'filter'),
     body = body,
     encode = 'json',
   ), silent = TRUE)
-  stx_availability(res)
+  if (inherits(res, 'try-error') ||
+      ! httr::status_code(res) %in% c(200, 400)) {
+    stx_availability(res)
+    
+    return(NULL)
+  }
   if (res$status_code == 400) {
     warning(jsonlite::fromJSON(httr::content(res, type = 'text', encoding = 'UTF-8')))
     out_fil = data.table(NA)
@@ -200,10 +210,15 @@ stx_query = function(cas = NULL,
 stx_chem = function() {
   message('This endpoint is still experimental.')
   res = try(httr::GET(
-    url = file.path(domain(), 'chem'),
+    url = file.path(stx_domain(), 'chem'),
     encode = 'json'
   ), silent = TRUE)
-  stx_availability(res)
+  if (inherits(res, 'try-error') ||
+      ! httr::status_code(res) %in% c(200, 400)) {
+    stx_availability(res)
+    
+    return(NULL)
+  }
   out = read_bin_vec(res$content, type = 'fst')
   setnames(out, sub('ccl_|cro_', '', names(out)))
   out
@@ -226,16 +241,44 @@ stx_chem = function() {
 stx_taxa = function() {
   message('This endpoint is still experimental.')
   res = try(httr::GET(
-    url = file.path(domain(), 'taxa'),
+    url = file.path(stx_domain(), 'taxa'),
     encode = 'json'
   ), silent = TRUE)
-  stx_availability(res)
+  if (inherits(res, 'try-error') ||
+      ! httr::status_code(res) %in% c(200, 400)) {
+    stx_availability(res)
+    
+    return(NULL)
+  }
   out = read_bin_vec(res$content, type = 'fst')
   setnames(out, sub('hab_|reg_', '', names(out)))
   out
 }
 
-
+#' Retrieve meta data
+#' 
+#' @author Andreas Scharmüller
+#' @noRd
+#' 
+stx_meta = function(vers = NULL) {
+  # request
+  body = list(vers = vers)
+  # POST
+  res = try(httr::POST(
+    url = file.path(stx_domain(), 'meta'),
+    body = body,
+    encode = 'json'
+  ), silent = TRUE)
+  if (inherits(res, 'try-error') ||
+      ! httr::status_code(res) %in% c(200, 400)) {
+    stx_availability(res)
+    
+    return(NULL)
+  }
+  cont = httr::content(res, type = 'text', encoding = 'UTF-8')
+  out = jsonlite::fromJSON(cont)
+  out
+}
 
 # IDEA
 # microbenchmark::microbenchmark({
@@ -298,33 +341,13 @@ stx_aggregate = function(dat = NULL) {
 #' @author Andreas Scharmüller
 #' @noRd
 #' 
-domain = function() {
+stx_domain = function() {
   baseurl = 'http://139.14.20.252'
-  # baseurl = 'http://127.0.0.1' # debuging
+  # baseurl = 'http://127.0.0.1' # DEBUG
   port = 8000
-  domain = paste0(baseurl, ':', port)
+  dmn = paste0(baseurl, ':', port)
   
-  return(domain)
-}
-
-#' Retrieve meta data
-#' 
-#' @author Andreas Scharmüller
-#' @noRd
-#' 
-stx_meta = function(vers = NULL) {
-  # request
-  body = list(vers = vers)
-  # POST
-  res = httr::POST(
-    url = file.path(domain(), 'meta'),
-    body = body,
-    encode = 'json'
-  )
-  cont = httr::content(res, type = 'text', encoding = 'UTF-8')
-  out = jsonlite::fromJSON(cont)
-  
-  return(out)
+  dmn
 }
 
 #' Check availability of connection
@@ -332,12 +355,11 @@ stx_meta = function(vers = NULL) {
 #' @author Andreas Scharmüller
 #' @noRd
 #' 
-stx_availability = function(res,
-                            http_codes = c(200, 400)) {
-  if (inherits(res, 'try-error') || ! httr::status_code(res) %in% http_codes) {
-    msg = '
-The standartox web service seems currently unavailable. Please try again after some time. Should it still not work then, please file an issue here:
-https://github.com/andschar/standartox/issues'
-    stop(msg)
-  }
+stx_availability = function(res) {
+    msg = paste0(
+    'The standartox web service seems currently unavailable.
+    Please try again after some time. Should it still not work then, please file an issue here:
+https://github.com/andschar/standartox/issues
+Error code: ',res)
+    message(msg)
 }
